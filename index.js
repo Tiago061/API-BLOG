@@ -45,13 +45,13 @@ app.get('/posts', (req, res) => {
 })
 
 app.get('/posts/:id', (req, res) => {
-  const post = posts.find((p) => p.id === req.params.id)
+  const post = posts.find((p) => p.id === parseInt(req.params.id))
   if(!post) return res.status(404).json({ message: "Post not found" });
   res.json(post)
 })
 
 
-app.post('/posts/:id', (req, res) => {
+app.post('/posts', (req, res) => {
   const newId = lastId += 1;
   const newPost = {
     id: newId,
@@ -66,31 +66,22 @@ app.post('/posts/:id', (req, res) => {
 })
 
 app.patch('/posts/:id', (req, res) => {
-  const existingPost = posts.find((p) => p.id === req.params.id)
-  const updatePost = {
-    id: id,
-    title: req.body.title || existingPost.title,
-    content: req.body.content || existingPost.content,
-    author: req.body.author || existingPost.author,
-    date: new Date(),
-  }
-  const post = posts.find((p) => p.id === req.params.id)
-  posts[post] = updatePost
-  console.log(posts[post])
-  res.json(updatePost)
+  const post = posts.find((p) => p.id === parseInt(req.params.id))
+  if(!post) return res.status(404).json({message: "Post not found"})
+
+  if(req.body.title) post.title = req.body.title
+  if(req.body.content) post.content = req.body.content
+  if(req.body.author) post.author = req.body.author
+
+  res.json(post)
 })
 
 
 app.delete('/posts/:id', (req, res) => {
-  const post = posts.find((p) => p.id === req.params.id)
-  if(post > -1){
-    posts.slice(post, 1)
-    res.sendStatus(200)
-  } else{
-    res
-    .status(404)
-    .json({error: `Post with id: ${id} not found. No posts were deleted.`})
-  }
+  const post = posts.findIndex((p) => p.id === parseInt(req.params.id))
+  if(post === -1) return res.status(404).json({message: "Post not found"})
+    posts.splice(post, 1)
+    res.json({message: "Post deleted"})
 })
 
 app.listen(port, () => {
